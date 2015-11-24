@@ -1,0 +1,8 @@
+{
+  "name": "pdfsign.js",
+  "version": "1.0.0",
+  "dependencies": {
+    "forge": "~0.6.37",
+    "pdfjs-dist": "~1.2.87"
+  }
+}

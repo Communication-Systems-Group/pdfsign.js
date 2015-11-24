@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My index</title>
+  <meta charset="utf-8"/>
+</head>
+<body>
+  <!-- inject:js -->
+  <!-- endinject -->
+</body>
+
+<input type="file" id="files" name="files[]" multiple />
+<input type="file" id="pdfs" name="pdfs[]" multiple />
+
+<script type="text/javascript">
+
+function handleFileSelect1(evt) {
+	var file = evt.target.files[0];
+	var reader = new FileReader();
+	reader.onload = function (event) {
+		var data = event.target.result;
+		PDFSIGN.test(data);
+	}
+	reader.readAsBinaryString(file);
+}
+document.getElementById('files').addEventListener('change', handleFileSelect1, false);
+
+function handleFileSelect2(evt) {
+	var file = evt.target.files[0];
+	var reader = new FileReader();
+	reader.onload = function (event) {
+		var data = event.target.result;
+		PDFSIGN.testpdf(StringToUint8Array(data));
+	}
+	reader.readAsBinaryString(file);
+}
+
+function StringToUint8Array(string) {
+    var binary, binLen, buffer, chars, i, _i;
+    binary = StringToBinary(string);
+    binLen = binary.length;
+    buffer = new ArrayBuffer(binLen);
+    chars  = new Uint8Array(buffer);
+    for (i = _i = 0; 0 <= binLen ? _i < binLen : _i > binLen; i = 0 <= binLen ? ++_i : --_i) {
+        chars[i] = String.prototype.charCodeAt.call(binary, i);
+    }
+    return chars;
+}
+
+function StringToBinary(string) {
+    var chars, code, i, isUCS2, len, _i;
+
+    len = string.length;
+    chars = [];
+    isUCS2 = false;
+    for (i = _i = 0; 0 <= len ? _i < len : _i > len; i = 0 <= len ? ++_i : --_i) {
+        code = String.prototype.charCodeAt.call(string, i);
+        if (code > 255) {
+            isUCS2 = true;
+            chars = null;
+            break;
+        } else {
+            chars.push(code);
+        }
+    }
+    if (isUCS2 === true) {
+        return unescape(encodeURIComponent(string));
+    } else {
+        return String.fromCharCode.apply(null, Array.prototype.slice.apply(chars));
+    }
+}
+
+document.getElementById('pdfs').addEventListener('change', handleFileSelect2, false);
+
+</script>
+
+</html>
