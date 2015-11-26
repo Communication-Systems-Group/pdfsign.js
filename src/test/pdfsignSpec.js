@@ -10,6 +10,7 @@ describe("PDFSIGN", function() {
 
     /*it("test strhex", function() {
     	expect(PDFSIGN._strHex('M')).toBe('4d');
+        expect(PDFSIGN._strHex('\n')).toBe('0a');
 	expect(PDFSIGN._strHex('Ma')).toBe('4d61');
     });
     
