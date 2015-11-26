@@ -344,6 +344,7 @@ PDFSIGN = (function () {
 		
 		var p7 = forge.pkcs7.createSignedData();
                 p7.content = forge.util.createBuffer(rawpdf);
+                p7.addCertificate(cert.cert);
 		if(typeof cert1 !== 'undefined') {
                     p7.addCertificate(cert1.cert);
                 }
