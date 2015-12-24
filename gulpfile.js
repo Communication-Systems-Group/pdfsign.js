@@ -16,7 +16,7 @@ gulp.task('clean-dest', function () {
     	.pipe(clean({force: false}));
 	});
 
-gulp.task('scripts', function() {
+gulp.task('scripts', ['clean-dest'], function() {
     return gulp.src('src/js/*.js')
         .pipe(concat('pdfsign.js'))
         .pipe(gulp.dest('build'));
@@ -33,7 +33,7 @@ gulp.task('patch-pkcs7', ['clean'], function(){
             .pipe(gulp.dest('bower_components/forge/js/'));
 });
 
-gulp.task('patch2', [], function(){
+gulp.task('patch2', ['clean-dest'], function(){
 	return gulp.src(['src/lib/pdfjs/shared/global.js', 
             'src/lib/pdfjs/shared/util.js',
             'src/lib/pdfjs/core/chunked_stream.js',
@@ -54,7 +54,7 @@ gulp.task('install', ['patch-pkcs7'], function(){
             .pipe(run('cd bower_components/forge && npm run bundle'));
 });
 
-gulp.task('bower-files', ['install', 'patch2'], function() {
+gulp.task('bower-files', ['install', 'patch2', 'clean-dest'], function() {
 	var jsFilter = filter(['forge/js/forge.bundle.js']);
 	return bower()
 		.pipe(jsFilter)
@@ -62,7 +62,7 @@ gulp.task('bower-files', ['install', 'patch2'], function() {
 		.pipe(gulp.dest('build/lib'));
 });
 
-gulp.task('index', ['scripts', 'bower-files', 'clean-dest'], function () {
+gulp.task('index', ['scripts', 'bower-files'], function () {
 	return gulp.src('src/html/index.html')
 	    .pipe(inject(gulp.src(['./build/lib/**', './build/*.js'], {read: false}), {relative: false, ignorePath: 'build', addRootSlash: false}))
 	  	.pipe(gulp.dest('./build'));
