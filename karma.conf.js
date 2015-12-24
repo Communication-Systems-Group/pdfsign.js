@@ -5,7 +5,7 @@ module.exports = function(config) {
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
+    basePath: '.',
 
 
     // frameworks to use
@@ -15,15 +15,15 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'build/**/*.js',
-      'src/test/**/*Spec.js',
-      'build/*.js'
+        {pattern: 'build/**/*.js', included: true},
+        'src/test/*Spec.js'
     ],
 
 
     // list of files to exclude
-    exclude: [
-    ],
+    //exclude: [
+    //    'build/pdfjs/**/*.js'
+    //],
 
 
     // preprocess matching files before serving them to the browser

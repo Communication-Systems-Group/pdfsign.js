@@ -8,6 +8,8 @@ var bower  = require('gulp-bower');
 var inject = require('gulp-inject');
 var clean  = require('gulp-clean');
 var filter = require('gulp-filter');
+var install = require("gulp-install");
+var run = require('gulp-run')
 
 gulp.task('clean-dest', function () {
 	return gulp.src(['/srv/http/pdfsign'], {read: false})
@@ -20,11 +22,50 @@ gulp.task('scripts', function() {
         .pipe(gulp.dest('build'));
 });
 
-gulp.task('bower-files', function(){
-	var jsFilter = filter(['pdfjs-dist/build/pdf.combined.js', 'forge/js/*bundle*.js']);
+gulp.task('clean', function(){
+	return gulp.src(['bower_components/forge/js/pkcs7.js'])
+            .pipe(clean());
+});
+
+gulp.task('patch-pkcs7', ['clean'], function(){
+	return gulp.src('src/lib/pkcs7-detached.js')
+            .pipe(rename("pkcs7.js"))
+            .pipe(gulp.dest('bower_components/forge/js/'));
+});
+
+//gulp.task('patch-frag', ['clean'], function(){
+//	return gulp.src('src/lib/start-patched.frag')
+//            .pipe(rename("start.frag"))
+//            .pipe(gulp.dest('bower_components/forge/'));
+//});
+
+
+gulp.task('patch2', ['clean'], function(){
+	return gulp.src(['src/lib/pdfjs/shared/global.js', 
+            'src/lib/pdfjs/shared/util.js',
+            'src/lib/pdfjs/core/chunked_stream.js',
+            'src/lib/pdfjs/core/primitives.js',
+            'src/lib/pdfjs/core/stream.js',
+            'src/lib/pdfjs/core/parser.js',
+            'src/lib/pdfjs/core/crypto.js',
+            'src/lib/pdfjs/core/obj.js',
+            'src/lib/pdfjs/core/document.js'])
+            .pipe(concat('pdfjs.js'))
+            .pipe(gulp.dest('build/lib'));
+});
+
+gulp.task('install', ['patch-pkcs7'], function(){
+	return gulp.src('bower_components/forge/bower.json')
+            .pipe(gulp.dest('./'))
+            .pipe(install())
+            .pipe(run('cd bower_components/forge && npm run bundle'));
+});
+
+gulp.task('bower-files', ['install', 'patch2'], function() {
+	var jsFilter = filter(['forge/js/forge.bundle.js']);
 	return bower()
 		.pipe(jsFilter)
-		.pipe(concat('libs.js'))
+		.pipe(concat('forge-patched.js'))
 		.pipe(gulp.dest('build/lib'));
 });
 
