@@ -1,3 +1,13 @@
+/*
+ * PDFSign v1.0.0
+ * https://github.com/Communication-Systems-Group/pdfsign.js
+ *
+ * Copyright 2015, Thomas Bocek, University of Zurich
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+
 //using the object if available or creating a new instance if not present
 if (typeof PDFSIGN === 'undefined') {
 	  (typeof window !== 'undefined' ? window : this).PDFSIGN = {};

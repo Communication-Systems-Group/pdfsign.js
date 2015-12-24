@@ -1,81 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My index</title>
-  <meta charset="utf-8"/>
+
+<title>PDFSign</title>
+<meta charset="utf-8"/>
+  
+<!-- inject:js -->
+<!-- endinject -->
+
 </head>
 <body>
-  <!-- inject:js -->
-  <!-- endinject -->
-</body>
 
-<input type="file" id="files" name="files[]" multiple />
-<input type="file" id="pdfs" name="pdfs[]" multiple />
-
+  <table>
+    <tr>
+      <th>p12 Certificate</th><th>p12 Password</th><th>PDF file</th>
+    </tr><tr>
+      <td><input type="file" id="cert" name="cert[]" multiple /></td>
+      <td><input type="password" id="pass" name="pass" /></td>
+      <td><input type="file" id="pdf" name="pdf[]" multiple /></td>
+    </tr>
+  </table>
+    
 <script type="text/javascript">
 
+var cert = new Uint8Array();
 function handleFileSelect1(evt) {
-	var file = evt.target.files[0];
-	var reader = new FileReader();
-	reader.onload = function (event) {
-		var data = event.target.result;
-		PDFSIGN.test(data);
-	}
-	reader.readAsBinaryString(file);
+    var file = evt.target.files[0];
+    var reader = new FileReader();
+    reader.onload = function (event) {
+        cert = event.target.result;
+    }
+    reader.readAsArrayBuffer(file);
 }
-document.getElementById('files').addEventListener('change', handleFileSelect1, false);
+document.getElementById('cert').addEventListener('change', handleFileSelect1, false);
 
 function handleFileSelect2(evt) {
-	var file = evt.target.files[0];
-	var reader = new FileReader();
-	reader.onload = function (event) {
-		var data = event.target.result;
-		PDFSIGN.testpdf(StringToUint8Array(data));
-	}
-	reader.readAsBinaryString(file);
-}
-
-function StringToUint8Array(string) {
-    var binary, binLen, buffer, chars, i, _i;
-    binary = StringToBinary(string);
-    binLen = binary.length;
-    buffer = new ArrayBuffer(binLen);
-    chars  = new Uint8Array(buffer);
-    for (i = _i = 0; 0 <= binLen ? _i < binLen : _i > binLen; i = 0 <= binLen ? ++_i : --_i) {
-        chars[i] = String.prototype.charCodeAt.call(binary, i);
+    var file = evt.target.files[0];
+    var reader = new FileReader();
+    reader.onload = function (event) {
+	var data = event.target.result;
+	pdfSigned = PDFSIGN.signpdf(new Uint8Array(data), new Uint8Array(cert), document.getElementById('pass').value);
+        createPDFDownload(pdfSigned, 'pdfSigned.pdf');
     }
-    return chars;
+    reader.readAsArrayBuffer(file);
 }
+document.getElementById('pdf').addEventListener('change', handleFileSelect2, false);
 
-function StringToBinary(string) {
-    var chars, code, i, isUCS2, len, _i;
-
-    len = string.length;
-    chars = [];
-    isUCS2 = false;
-    for (i = _i = 0; 0 <= len ? _i < len : _i > len; i = 0 <= len ? ++_i : --_i) {
-        code = String.prototype.charCodeAt.call(string, i);
-        if (code > 255) {
-            isUCS2 = true;
-            chars = null;
-            break;
-        } else {
-            chars.push(code);
-        }
-    }
-    if (isUCS2 === true) {
-        return unescape(encodeURIComponent(string));
-    } else {
-        return String.fromCharCode.apply(null, Array.prototype.slice.apply(chars));
-    }
-}
-
-//document.getElementById('pdfs').addEventListener('change', handleFileSelect2, false);
-//var pdfmini = PDFSIGN._convertDataURIToBinary('data:application/pdf;base64,JVBERi0xLjQKJcKlwrEKCgoKMSAwIG9iagogIDw8IC9UeXBlIC9DYXRhbG9nCiAgICAgL1BhZ2VzIDIgMCBSCiAgPj4KZW5kb2JqCgoyIDAgb2JqCiAgPDwgL1R5cGUgL1BhZ2VzCiAgICAgL0tpZHMgWzMgMCBSXQogICAgIC9Db3VudCAxCiAgICAgL01lZGlhQm94IFswIDAgMzAwIDE0NF0KICA+PgplbmRvYmoKCjMgMCBvYmoKICA8PCAgL1R5cGUgL1BhZ2UKICAgICAgL1BhcmVudCAyIDAgUgogICAgICAvUmVzb3VyY2VzCiAgICAgICA8PCAvRm9udAogICAgICAgICAgIDw8IC9GMQogICAgICAgICAgICAgICA8PCAvVHlwZSAvRm9udAogICAgICAgICAgICAgICAgICAvU3VidHlwZSAvVHlwZTEKICAgICAgICAgICAgICAgICAgL0Jhc2VGb250IC9UaW1lcy1Sb21hbgogICAgICAgICAgICAgICA+PgogICAgICAgICAgID4+CiAgICAgICA+PgogICAgICAvQ29udGVudHMgNCAwIFIKICA+PgplbmRvYmoKCjQgMCBvYmoKICA8PCAvTGVuZ3RoIDU1ID4+CnN0cmVhbQogIEJUCiAgICAvRjEgMTggVGYKICAgIDAgMCBUZAogICAgKEhlbGxvIFdvcmxkKSBUagogIEVUCmVuZHN0cmVhbQplbmRvYmoKCnhyZWYKMCA1CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxOCAwMDAwMCBuIAowMDAwMDAwMDc3IDAwMDAwIG4gCjAwMDAwMDAxNzggMDAwMDAgbiAKMDAwMDAwMDQ1NyAwMDAwMCBuIAp0cmFpbGVyCiAgPDwgIC9Sb290IDEgMCBSCiAgICAgIC9TaXplIDUKICA+PgpzdGFydHhyZWYKNTY1CiUlRU9GCg==');
-//var cert = PDFSIGN._convertDataURIToBinary('data:application/x-pkcs12;base64,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');
-    
-
-
+function createPDFDownload(array, filename) {
+    var a = window.document.createElement('a');
+    a.href = window.URL.createObjectURL(new Blob([array], { type: 'application/pdf' }));
+    a.download = filename;
+    // Append anchor to body.
+    document.body.appendChild(a);
+    a.click();
+    // Remove anchor from body
+    document.body.removeChild(a);
+}   
 </script>
 
+</body>
 </html>
