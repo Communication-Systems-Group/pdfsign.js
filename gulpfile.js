@@ -77,7 +77,7 @@ gulp.task('index', ['scripts', 'bower-files'], function () {
 
 gulp.task('copy', ['index', 'clean-dest'], function () {
 	  return gulp.src('build/**')
-	  	.pipe(gulp.dest('/srv/http/pdfsign'));
+	  	.pipe(gulp.dest('dist/pdfsign'));
 });
 
 // Watch Files For Changes
