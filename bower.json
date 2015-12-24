@@ -1,11 +1,14 @@
 {
   "name": "PDFSign.js",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "PDFSign.js is a JavaScript library that signs a PDF in the browser.",
   "authors": [
     "Thomas Bocek"
   ],
   "license": "MIT",
+  "main": [
+    "src/js/main.js"
+  ],
   "dependencies": {
     "forge": "~0.6.38"
   },
@@ -29,5 +32,12 @@
     "karma-requirejs": "^0.2.2",
     "karma-spec-reporter": "0.0.22",
     "main-bower-files": "^2.9.0"
-  }
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
 }
