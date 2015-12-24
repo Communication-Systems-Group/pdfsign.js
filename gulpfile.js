@@ -8,12 +8,12 @@ var bower  = require('gulp-bower');
 var inject = require('gulp-inject');
 var clean  = require('gulp-clean');
 var filter = require('gulp-filter');
-var install = require("gulp-install");
-var run = require('gulp-run')
+var install = require('gulp-install');
+var run = require('gulp-run');
 
 gulp.task('clean-dest', function () {
-	return gulp.src(['/srv/http/pdfsign'], {read: false})
-    	.pipe(clean({force: true}));
+	return gulp.src(['build/**/*'], {read: false})
+    	.pipe(clean({force: false}));
 	});
 
 gulp.task('scripts', function() {
@@ -33,14 +33,7 @@ gulp.task('patch-pkcs7', ['clean'], function(){
             .pipe(gulp.dest('bower_components/forge/js/'));
 });
 
-//gulp.task('patch-frag', ['clean'], function(){
-//	return gulp.src('src/lib/start-patched.frag')
-//            .pipe(rename("start.frag"))
-//            .pipe(gulp.dest('bower_components/forge/'));
-//});
-
-
-gulp.task('patch2', ['clean'], function(){
+gulp.task('patch2', [], function(){
 	return gulp.src(['src/lib/pdfjs/shared/global.js', 
             'src/lib/pdfjs/shared/util.js',
             'src/lib/pdfjs/core/chunked_stream.js',
@@ -50,7 +43,7 @@ gulp.task('patch2', ['clean'], function(){
             'src/lib/pdfjs/core/crypto.js',
             'src/lib/pdfjs/core/obj.js',
             'src/lib/pdfjs/core/document.js'])
-            .pipe(concat('pdfjs.js'))
+            .pipe(concat('pdfjs.parser.js'))
             .pipe(gulp.dest('build/lib'));
 });
 
@@ -69,21 +62,16 @@ gulp.task('bower-files', ['install', 'patch2'], function() {
 		.pipe(gulp.dest('build/lib'));
 });
 
-gulp.task('index', ['scripts', 'bower-files'], function () {
+gulp.task('index', ['scripts', 'bower-files', 'clean-dest'], function () {
 	return gulp.src('src/html/index.html')
 	    .pipe(inject(gulp.src(['./build/lib/**', './build/*.js'], {read: false}), {relative: false, ignorePath: 'build', addRootSlash: false}))
 	  	.pipe(gulp.dest('./build'));
 });
 
-gulp.task('copy', ['index', 'clean-dest'], function () {
-	  return gulp.src('build/**')
-	  	.pipe(gulp.dest('dist/pdfsign'));
-});
-
 // Watch Files For Changes
 gulp.task('watch', function() {
-    gulp.watch('src/**', ['scripts', 'bower-files', 'index', 'copy']);
+    gulp.watch('src/**', ['scripts', 'bower-files', 'index']);
 });
 
 // Default Task
-gulp.task('default', ['scripts', 'watch', 'bower-files', 'index', 'copy']);
+gulp.task('default', ['scripts', 'watch', 'bower-files', 'index']);
