@@ -10,7 +10,9 @@ signed-pdf = PDFSIGN.signpdf(pdf, p12-cert, p12-cert-password);
 An example site is located in `src/html`. In this example, one can set the certificate 
 (e.g., `support/mycert-1-alt.p12`), set the password "1234", and add a PDF file. 
 The PDF will be signed with the certificate and the Adobe Reader will show that 
-the PDF is signed but not trusted (its a self signed certificate).
+the PDF is signed but not trusted (its a self signed certificate). The button 
+'Create a PDF and output base64' takes a base64 encode file and outputs a base64
+document in the browser, which immediately displays the PDF.
 
 PDFSign uses two external libraries: 
 [forge](https://github.com/digitalbazaar/forge) and [PDF.js](https://mozilla.github.io/pdf.js/).

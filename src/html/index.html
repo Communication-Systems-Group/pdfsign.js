@@ -21,7 +21,7 @@
     </tr>
   </table>
 <br/><br/>
-<button onclick="console.log(encodeBase64(PDFSIGN.signpdf(pdfmini, cert, '1234', new Date(1450365030990))));">Create a PDF and output base64 in the console</button> 
+<button onclick="document.location = 'data:application/pdf;base64,'+encodeBase64(PDFSIGN.signpdf(pdfmini, cert, '1234', new Date(1450365030990)));">Create a PDF and output base64</button> 
 <script type="text/javascript">
 
 var BASE64_MARKER = ';base64,';
