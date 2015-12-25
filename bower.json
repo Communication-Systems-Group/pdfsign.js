@@ -1,6 +1,6 @@
 {
   "name": "PDFSign.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "PDFSign.js is a JavaScript library that signs a PDF in the browser.",
   "authors": [
     "Thomas Bocek"

@@ -1,0 +1,20 @@
+{
+  "locals": {
+    "url": "http://localhost:8080",
+    "name": "PDF.js Documentation",
+    "description": ""
+  },
+  "require": {
+    "typogr": "typogr"
+  },
+  "jade": {
+    "pretty": true
+  },
+  "markdown": {
+    "smartLists": true,
+    "smartypants": true
+  },
+  "plugins": [
+    "./plugins/wintersmith-makerelative.coffee"
+  ]
+}

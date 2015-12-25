@@ -18,17 +18,6 @@ if (typeof PDFSIGN === 'undefined') {
 
 PDFSIGN = (function () {
 	
-        var BASE64_MARKER = ';base64,';
-        var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-        
-	//private functions
-        //structure of inputs:
-        //
-        //xrefEntries.offset / number
-        //xrefEntries.gen / number
-        //xrefEntries.free / boolean
-        //startxref / number
-        //sha256hex / string
         function createXrefTable(xrefEntries) {
             xrefEntries = sortOnKeys(xrefEntries);
             var retVal ='xref\n';
@@ -78,9 +67,6 @@ PDFSIGN = (function () {
             xrefEntries = sortOnKeys(xrefEntries);
             
             var retVal ='xref\n';
-            //retVal += '0 1\n';
-            //retVal += '0000000000 65535 f \n';
-            
             var last = -2;
             for(var i in xrefEntries) {
                 i = parseInt(i);
@@ -187,20 +173,6 @@ PDFSIGN = (function () {
             return xrefEntries[currentMinIndex];
         }
         
-        function findXref(xrefEntries, offset) {
-            var currentMin = Number.MAX_SAFE_INTEGER;
-            var currentMinIndex = -1;
-            for(var i in xrefEntries) {
-                if(xrefEntries[i].offset < offset) {
-                    if(offset - xrefEntries[i].offset < currentMin) {
-                        currentMin = offset - xrefEntries[i].offset;
-                        currentMinIndex = i;
-                    }
-                }
-            }
-            return xrefEntries[currentMinIndex];
-        }
-        
         function updateArray(array, pos, str) {
             var upd = stringToUint8Array(str);
             for (var i = 0, len=upd.length; i < len; i++) {
@@ -246,7 +218,7 @@ PDFSIGN = (function () {
 	
 	function uint8ArrayToString(buf, from, to) {
             if(typeof from !== 'undefined' && typeof to !== 'undefined') {
-                var s = ''
+                var s = '';
                 for (var i=from; i<to; i++) {
                     s = s + String.fromCharCode(buf[i]);
                 }
@@ -323,80 +295,6 @@ PDFSIGN = (function () {
             return -1;
         }
         
-        function findInCurrent(array, xrefEntries, needle1, needle2) {
-            for(var i in xrefEntries) {
-                var curr = xrefEntries[i];
-                if(curr.offset === 0) {continue;}
-                var next = findSuccessorEntry(xrefEntries, curr);
-                var offset1 = find(array, needle1, curr.offset, next.offset);
-                if(typeof needle2 !== 'undefined') {
-                    var offset2 = find(array, needle2, curr.offset, next.offset);
-                    if(offset1 >= 0 && offset2 >=0) {
-                        var type = uint8ArrayToString(array, offset1, offset2 + needle2.length + 1).replace(/\s+/g, '');
-                        if(type !== needle1+needle2) {
-                            offset2 = -1;
-                        }
-                    }
-                } else {
-                    offset2 = offset1;
-                }
-                if(offset1 >= 0 && offset2 >=0) {
-                    return {offset:offset1, xref:curr, next:next, num:i};
-                }
-            }
-        }
-        
-        function findWS(uint8, needle, start, limit) {
-            
-            start = typeof start !== 'undefined' ? start : 0;
-            limit = typeof limit !== 'undefined' ? limit : Number.MAX_SAFE_INTEGER;
-            
-            var search = stringToUint8Array(needle);
-            var match = 0;
-            
-            for(var i=start;i<uint8.length && i<limit;i++) {
-                //63 is ?, 32 is space
-                if(63 === search[match] && uint8[i] === 32) {
-                    continue;
-                } else if(63 === search[match] && uint8[i] !== 32) {
-                    match++;
-                }
-                if(uint8[i] === search[match]) {
-                    match++;
-                } else {
-                    match = 0;
-                    if(uint8[i] === search[match]) {
-                        match++;
-                    }
-                }
-                
-                if(match === search.length) {
-                    return (i + 1) - match;
-                }
-            }
-            
-            return -1;
-        }
-        
-        function findLastLine(array, needle, last) {
-            last = typeof last !== 'undefined' ? last : 0;
-            var offset = find(array, '\n'+needle+'\n', last);
-            if( offset >= 0) {
-                last = findLastLine(array, needle, offset + 1);
-            }
-            var offset = find(array, '\n'+needle+'\r', last);
-            if( offset >= 0) {
-                last = findLastLine(array, needle, offset + 1);
-            }
-            return last;
-        }
-	
-	function convertDataURIToBinary(dataURI) {
-            var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
-            var base64 = dataURI.substring(base64Index);
-            return decodeBase64(base64);
-	}
-
 	function strHex(s) {
             var a = "";
             for( var i=0; i<s.length; i++ ) {
@@ -412,72 +310,6 @@ PDFSIGN = (function () {
             return pdf.acroForm.get('SigFlags') === 3;
         }
 	
-	/**
-	*
-	*  Base64 encode / decode
-	*  http://www.webtoolkit.info/
-	*  
-	*  window.atob -> browser/node.js dependant, this works on any engine
-	*
-	**/
-        function encodeBase64(input) {
-            var output = "";
-            var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-            var i = 0;
-            while (i < input.length) {
-                chr1 = input[i++];
-                chr2 = input[i++];
-                chr3 = input[i++];
- 
-                enc1 = chr1 >> 2;
-                enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-                enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-                enc4 = chr3 & 63;
- 
-                if (isNaN(chr2)) {
-                    enc3 = enc4 = 64;
-                } else if (isNaN(chr3)) {
-                    enc4 = 64;
-                }
-                output = output + keyStr.charAt(enc1) + keyStr.charAt(enc2) + keyStr.charAt(enc3) + keyStr.charAt(enc4);
-            }
-            return output;
-        }
-
-	function decodeBase64(input) {
-	    var chr1, chr2, chr3;
-	    var enc1, enc2, enc3, enc4;
-	    var i = 0;
-            var size = 0;
-            
-	    input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-
-            var uint8 = new Uint8Array(input.length);
-
-	    while (i < input.length) {
-
-	        enc1 = keyStr.indexOf(input.charAt(i++));
-	        enc2 = keyStr.indexOf(input.charAt(i++));
-	        enc3 = keyStr.indexOf(input.charAt(i++));
-	        enc4 = keyStr.indexOf(input.charAt(i++));
-
-	        chr1 = (enc1 << 2) | (enc2 >> 4);
-	        chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-	        chr3 = ((enc3 & 3) << 6) | enc4;
-
-                uint8[size++] = (chr1 & 0xff);
-
-	        if (enc3 !== 64) {
-                    uint8[size++] = (chr2 & 0xff);
-	        }
-	        if (enc4 !== 64) {
-                    uint8[size++] = (chr3 & 0xff);
-	        }
-
-	    }
-            return uint8.subarray(0,size);
-	}
-        
         function updateXrefOffset(xref, offset, offsetDelta) {
             for(var i in xref.entries) {
                 if(xref.entries[i].offset >= offset) {
@@ -615,7 +447,7 @@ PDFSIGN = (function () {
             // to check the size, add ~25% size, then calculate the signature and place in the empty 
             // space.
             var start = sigEntry+ ' 0 obj\n<</Contents <';
-            var dummy = api.sign(convertUint8ArrayToBinaryString(cert), 'A', password);
+            var dummy = sign(convertUint8ArrayToBinaryString(cert), 'A', password);
             //TODO: Adobe thinks its important to have the right size, no idea why this is the case
             var crypto = new Array(round256(dummy.length * 2)).join( '0' );
             var middle = '>\n/Type/Sig/SubFilter/adbe.pkcs7.detached/Location()/M(D:'+now(date)+'\')\n/ByteRange ';
@@ -671,7 +503,7 @@ PDFSIGN = (function () {
             var byteRange = '['+pad10(from1)+' '+pad10(to1 - 1) + ' ' +pad10(from2 + 1)+ ' ' + pad10(to2) + ']';
             array = updateArray(array, (offsetSig + offsetByteRange), byteRange);
             var data = removeFromArray(array, to1 - 1, from2 + 1);
-            var crypto2 = api.sign(convertUint8ArrayToBinaryString(cert), data, password, date);
+            var crypto2 = sign(convertUint8ArrayToBinaryString(cert), data, password, date);
             array = updateArray(array, to1, crypto2);
             return array;
         }
@@ -713,7 +545,7 @@ PDFSIGN = (function () {
                     
             var startSig = array.length;
             var start = sigEntry+ ' 0 obj\n<</Contents <';
-            var dummy = api.sign(convertUint8ArrayToBinaryString(cert), 'A', password);
+            var dummy = sign(convertUint8ArrayToBinaryString(cert), 'A', password);
             //TODO: Adobe thinks its important to have the right size, no idea why this is the case
             var crypto = new Array(round256(dummy.length * 2)).join( '0' );
             var middle = '>\n/Type/Sig/SubFilter/adbe.pkcs7.detached/Location()/M(D:'+now(date)+'\')\n/ByteRange ';
@@ -747,7 +579,7 @@ PDFSIGN = (function () {
             //now sign from1-to1 / from2-to2 and update byterange
                     
             var data = removeFromArray(array, to1 - 1, from2 + 1);
-            var crypto2 = api.sign(convertUint8ArrayToBinaryString(cert), data, password, date);
+            var crypto2 = sign(convertUint8ArrayToBinaryString(cert), data, password, date);
             array = updateArray(array, to1, crypto2);
             return array;
         }
@@ -758,10 +590,9 @@ PDFSIGN = (function () {
             pdf.parse();
             return pdf;
         }
-	
-	var api = {
-            sign: function(data, rawpdf, password, date) {
-                date = typeof date !== 'undefined' ?  date : new Date();
+        
+        function sign(data, rawpdf, password, date) {
+            date = typeof date !== 'undefined' ?  date : new Date();
 		var certBag = '1.2.840.113549.1.12.10.1.3';
 		var keyBag =  '1.2.840.113549.1.12.10.1.2';
 		
@@ -810,11 +641,18 @@ PDFSIGN = (function () {
                 var raw = forge.asn1.toDer(p7.toAsn1()).getBytes();
                 var hex = strHex(raw);
                 return hex;
-            },
-        
+        }
+	
+	var api = {
             signpdf: function(pdfRaw, cert, password, date) {
                 date = typeof date !== 'undefined' ? date : new Date();
-                pdf = loadPdf(pdfRaw)
+                if(pdfRaw instanceof ArrayBuffer) {
+                    pdfRaw = new Uint8Array(pdfRaw);
+                }
+                if(cert instanceof ArrayBuffer) {
+                    cert = new Uint8Array(cert);
+                }
+                pdf = loadPdf(pdfRaw);
                 var root = findRootEntry(pdf.xref);
                 var rootSuccessor = findSuccessorEntry(pdf.xref.entries, root);
                 if(!isSigInRoot(pdf)) {
@@ -827,7 +665,6 @@ PDFSIGN = (function () {
 	
 	/* test-code */
 	api._strHex = strHex;
-	api._convertDataURIToBinary = convertDataURIToBinary;
 	api._find = find;
         api._findBackwards = findBackwards;
 	api._findFreeXrefNr = findFreeXrefNr;
@@ -842,8 +679,6 @@ PDFSIGN = (function () {
         api._createXrefTable = createXrefTable;
         api._findXrefBlocks = findXrefBlocks;
         api._loadPdf = loadPdf;
-        api._encodeBase64 = encodeBase64;
-        api._decodeBase64 = decodeBase64;
 	/* end-test-code */
 	
 	return api;
