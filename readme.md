@@ -1,5 +1,7 @@
 # PDFSign.js
 
+## This library is not actively maintained anymore. There is a more active project to sign PDFs: [https://github.com/vbuch/node-signpdf](https://github.com/vbuch/node-signpdf)
+
 PDFSign.js is a JavaScript library that signs a PDF in the browser. No private keys 
 or passwords are ever sent over the network. The signing takes place in the browser 
 only. The API is very simple:
